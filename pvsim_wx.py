@@ -3,6 +3,8 @@
 import os
 import wx
 
+white = wx.Colour(255, 255, 255)
+
 class PVSimWindow(wx.Frame):
     def __init__(self, parent, title):
         super(PVSimWindow, self).__init__(parent, title=title, size=(800, 600))
@@ -12,20 +14,20 @@ class PVSimWindow(wx.Frame):
         self.scrolled_window.SetScrollRate(self.ds, self.ds)
 
         # Load images
-        self.top_image = wx.Image("test_timing_times.png", wx.BITMAP_TYPE_PNG)
-        self.left_image = wx.Image("test_timing_names.png", wx.BITMAP_TYPE_PNG)
-        self.main_image = wx.Image("test_timing.png", wx.BITMAP_TYPE_PNG)
+        top_image = wx.Image("test_timing_times.png", wx.BITMAP_TYPE_PNG)
+        left_image = wx.Image("test_timing_names.png", wx.BITMAP_TYPE_PNG)
+        main_image = wx.Image("test_timing.png", wx.BITMAP_TYPE_PNG)
 
         # Scale images to half size
-        top_width = self.top_image.GetWidth() // 2
-        self.top_height = self.top_image.GetHeight() // 2
-        self.left_width = self.left_image.GetWidth() // 2
-        left_height = self.left_image.GetHeight() // 2
-        main_width = self.main_image.GetWidth() // 2
-        main_height = self.main_image.GetHeight() // 2
-        self.top_image = self.top_image.Scale(top_width, self.top_height).ConvertToBitmap()
-        self.left_image = self.left_image.Scale(self.left_width, left_height).ConvertToBitmap()
-        self.main_image = self.main_image.Scale(main_width, main_height).ConvertToBitmap()
+        top_width = top_image.GetWidth() // 2
+        self.top_height = top_image.GetHeight() // 2
+        self.left_width = left_image.GetWidth() // 2
+        left_height = left_image.GetHeight() // 2
+        main_width = main_image.GetWidth() // 2
+        main_height = main_image.GetHeight() // 2
+        self.top_bitmap = top_image.Scale(top_width, self.top_height).ConvertToBitmap()
+        self.left_bitmap = left_image.Scale(self.left_width, left_height).ConvertToBitmap()
+        self.main_bitmap = main_image.Scale(main_width, main_height).ConvertToBitmap()
 
         # Bind events
         self.scrolled_window.Bind(wx.EVT_PAINT, self.OnPaint)
@@ -48,24 +50,24 @@ class PVSimWindow(wx.Frame):
         right, bottom = self.scrolled_window.GetVirtualSize()
 
         # Blank rectangle in upper right where cursor time will be drawn
-        dc.SetBrush(wx.Brush(wx.Colour(255, 255, 255)))
-        dc.SetPen(wx.Pen(wx.Colour(255, 255, 255)))
+        dc.SetBrush(wx.Brush(white))
+        dc.SetPen(wx.Pen(white))
         dc.DrawRectangle(0, 0, left, top)
 
         # Draw the top image, undoing any y scrolling
         # Clip each area to prevent overlap with other images
         dc.SetClippingRegion(left, 0, right, top)
-        dc.DrawBitmap(self.top_image, self.left_width, y_scroll * self.ds, True)
+        dc.DrawBitmap(self.top_bitmap, self.left_width, y_scroll * self.ds, True)
         dc.DestroyClippingRegion()
 
         # Draw the left image, undoing any x scrolling
         dc.SetClippingRegion(0, top, left, bottom)
-        dc.DrawBitmap(self.left_image, x_scroll * self.ds, self.top_height, True)
+        dc.DrawBitmap(self.left_bitmap, x_scroll * self.ds, self.top_height, True)
         dc.DestroyClippingRegion()
 
         # Draw the main image, normal scrolling
         dc.SetClippingRegion(left, top, right, bottom)
-        dc.DrawBitmap(self.main_image, self.left_width, self.top_height, True)
+        dc.DrawBitmap(self.main_bitmap, self.left_width, self.top_height, True)
         dc.DestroyClippingRegion()
 
     def OnScroll(self, event):
